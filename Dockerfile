@@ -26,6 +26,8 @@ RUN chmod 755 /sbin/entrypoint.sh
 
 EXPOSE 5432/tcp
 
+WORKDIR /var/lib/pgpro/1c-15
+
 ENTRYPOINT ["entrypoint.sh"]
 
 CMD ["postgres"]
