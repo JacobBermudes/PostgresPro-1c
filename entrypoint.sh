@@ -10,6 +10,11 @@ export PG_OOM_ADJUST_FILE PG_OOM_ADJUST_VALUE
 export PG_OOM_AJUST_VALUE
 PGLOG="$(dirname "$PGDATA")/pgstartup-$(basename "$PGDATA").log"
 
+allow_external_connections(){
+    echo "host    all             all             0.0.0.0/0            trust" >> /var/lib/pgpro/1c-15/data/pg_hba.conf
+    sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgpro/1c-15/data/postgresql.conf 
+}
+
 init_db(){
     if [[ -n $PG_PASSWORD ]]; then
         echo "${PG_PASSWORD}" > /tmp/pwfile
@@ -25,7 +30,9 @@ init_db(){
         --encoding=unicode \
         --locale=ru_RU.UTF-8 \
         --auth=trust \
-        --pwfile=/tmp/pwfile"    
+        --pwfile=/tmp/pwfile"
+
+    allow_external_connections    
 }
 
 
@@ -37,8 +44,7 @@ start_cluster(){
     su -l postgres -c "PG_OOM_ADJUST_FILE=-1000 PG_OOM_ADJUST_VALUE=$PG_OOM_ADJUST_VALUE _ADJPATH=/opt/pgpro/1c-15/bin:/usr/bin:/usr/sbin:/bin:/sbin ${BINDIR}/postgres -D '$PGDATA' "
 }
 
-if ! [[ -z ${1} ]]; then
-    
+if ! [[ -z ${1} ]]; then    
     echo "Starting container for PostgresPro 15 1C Edition..."
 
     if [[ -z $(ls -A "$PGDATA") ]]; then
@@ -49,6 +55,5 @@ if ! [[ -z ${1} ]]; then
     fi
 
     start_cluster
-
 fi
 
